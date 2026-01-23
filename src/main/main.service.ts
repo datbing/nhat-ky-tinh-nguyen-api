@@ -10,19 +10,9 @@ export class AppService {
       this.prisma.main_news.findMany({
         orderBy: { id: 'desc' },
       }),
-      this.prisma.missionSubmission.findMany({
-        where: { status: 'approved' },
+      this.prisma.news.findMany({
         orderBy: { id: 'desc' },
         take: 3,
-        include: {
-          user: {
-            select: {
-              fullName: true,
-              avatarUrl: true,
-              unionGroup: true,
-            },
-          },
-        },
       }),
     ]);
 
