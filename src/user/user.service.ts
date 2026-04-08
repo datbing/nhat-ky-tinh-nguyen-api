@@ -43,9 +43,7 @@ export class UserService {
     const user = await this.prisma.user.findFirst({ where: { studentId } })
     if (!user) return { status: 0, message: 'Không tìm thấy người dùng' }
 
-    const fixedHash = user.password.replace(/^\$2y\$/i, "$2b$");
-
-    const valid = await bcrypt.compare(dto.oldPassword, fixedHash)
+    const valid = await bcrypt.compare(dto.oldPassword, user.password)
     if (!valid) return { status: 0, message: 'Mật khẩu cũ không đúng' }
 
     const hashed = await bcrypt.hash(dto.newPassword, 10)

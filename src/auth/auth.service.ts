@@ -14,9 +14,9 @@ export class AuthService {
     });
     if (!user) return { status: 0, message: 'Không tìm thấy mã đoàn viên' };
 
-    const fixedHash = user.password.replace(/^\$2y\$/i, "$2b$");
+    // const fixedHash = user.password.replace(/^\$2y\$/i, "$2b$");
 
-    const isPasswordValid = await bcrypt.compare(dto.password, fixedHash);
+    const isPasswordValid = await bcrypt.compare(dto.password, user.password);
 
     if (!isPasswordValid) return { status: 0, message: 'Mật khẩu không đúng' };
 
@@ -36,5 +36,10 @@ export class AuthService {
         avatarUrl: user.avatarUrl,
       },
     };
+  }
+  async adminLogin(body: any) {
+    const payload = { sub: body.id, name: body.name, role: "admin" };
+    const access_token = await this.jwtService.signAsync(payload);
+    return { status: 1, access_token };
   }
 }

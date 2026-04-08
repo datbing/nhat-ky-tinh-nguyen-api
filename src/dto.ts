@@ -1,39 +1,38 @@
 import { IsString, MinLength } from 'class-validator';
-import e from 'express';
 
 // Login
 export class LoginDto {
   @IsString()
-  studentId: string;
+  studentId!: string;
 
   @IsString()
   @MinLength(6)
-  password: string;
+  password!: string;
 }
 
 // User
 export class UpdatePasswordDto {
   @IsString()
-  oldPassword: string;
+  oldPassword!: string;
   @IsString()
-  newPassword: string;
+  newPassword!: string;
 }
 
 
 // Mission
 export class MissionUploadDto {
   @IsString()
-  missionId: number;
+  missionId!: number;
 
   @IsString()
-  studentId: string;
+  studentId!: string;
 
   @IsString()
-  imageLink: string;
+  imageLink!: string;
 
   @IsString()
-  note: string;
+  note!: string;
 
   @IsString()
-  status: "pending"
+  status!: "pending"
 }
