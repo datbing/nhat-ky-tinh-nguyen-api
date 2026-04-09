@@ -48,10 +48,27 @@ export class AdminService {
   }
 
   async deleteMember(id: string) {
-    await this.prisma.user.delete({
-      where: { studentId: id },
+    if (!id) throw new BadRequestException('Lỗi: Không tìm thấy ID thành viên!');
+
+    await this.prisma.$transaction(async (tx) => {
+      await tx.newsLike.deleteMany({ where: { userId: id } });
+      await tx.newsComment.deleteMany({ where: { userId: id } });
+      const userNews = await tx.news.findMany({
+        where: { authorId: id },
+        select: { id: true }
+      });
+      const newsIds = userNews.map(n => n.id);
+      if (newsIds.length > 0) {
+        await tx.newsLike.deleteMany({ where: { newsId: { in: newsIds } } });
+        await tx.newsComment.deleteMany({ where: { newsId: { in: newsIds } } });
+      }
+      await tx.news.deleteMany({ where: { authorId: id } });
+      await tx.missionSubmission.deleteMany({ where: { studentId: id } });
+      await tx.user.delete({ where: { studentId: id } });
+
     });
-    return { status: 'success', message: 'Đã xóa đoàn viên!' };
+
+    return { status: 'success', message: 'Đã xóa đoàn viên và toàn bộ dữ liệu liên quan!' };
   }
 
   async resetPassword(id: string) {
@@ -108,10 +125,16 @@ export class AdminService {
   }
 
   async deleteAllMembers() {
-    await this.prisma.user.deleteMany();
-    return { status: 'success', message: 'Đã xóa hết tất cả đoàn viên!' };
-  }
+    await this.prisma.$transaction([
+      this.prisma.newsLike.deleteMany(),        // Xóa like trước
+      this.prisma.newsComment.deleteMany(),     // Xóa bình luận
+      this.prisma.news.deleteMany(),            // Xóa bài viết
+      this.prisma.missionSubmission.deleteMany(),// Xóa bài nộp nhiệm vụ
+      this.prisma.user.deleteMany()             // Xóa User CUỐI CÙNG
+    ]);
 
+    return { status: 'success', message: 'Đã xóa hết tất cả đoàn viên và dữ liệu liên quan!' };
+  }
   async resetPoints() {
     const missions = await this.prisma.missions.findMany({ select: { id: true } });
 
